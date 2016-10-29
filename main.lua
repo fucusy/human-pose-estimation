@@ -94,14 +94,20 @@ pairs = np.array([[1,2], [2,3], [3,7], [4,5], [4,7], [5,6], [7,9], [9,10], [14,9
 
 local predictions = torch.Tensor(n,16,2)
 
-for i=1,n do
+test_img = {}
+count = 0
+for i=65,65 do
+    format = "/home/chenqiang/data/human_post/001-nm-01-090-%04d.jpg"
+    img_name = string.format(format, i)
+    table.insert(test_img, img_name)
+    count = count + 1
+end
+
+for i=1,count  do
   -- Load and prepare the data
   local img = nil
-  if opts.dataset == 'mpii' then
-    img = image.load('dataset/mpii_dataset/images/'..valDataset[ids[i]].image)
-  else
-    img = image.load('dataset/lsp_dataset/images/'..valDataset[ids[i]].image)
-  end
+
+  img = image.load(test_img[i])
   local center = (function() if opts.dataset =='mpii' then return valDataset[ids[i]].center else return torch.Tensor({img:size()[3]/2,img:size()[2]/2}) end end)() 
   local scale = (function() if opts.dataset =='mpii' then return valDataset[ids[i]].scale else return 0.89 end end)() 
   local input = crop(img,center,scale,opts.res)
@@ -133,8 +139,8 @@ for i in range(pairs.shape[0]):
   # plot only the visible joints
    if np.mean(output[pairs[i,0]]) > activThresh and np.mean(output[pairs[i,1]]) > activThresh or dataset=='lsp':
     plt.plot(preds[[pairs[i,0],pairs[i,1]],0],preds[[pairs[i,0],pairs[i,1]],1],linewidth=3.0)
-plt.show()
-]=],{input=input:float(), preds = preds_hm:view(16,2), activThresh = activThresh, output = output:view(16,opts.res,opts.res), dataset = opts.dataset})
+plt.savefig("%s.png"%seq)
+]=],{input=input:float(), preds = preds_hm:view(16,2), activThresh = activThresh, output = output:view(16,opts.res,opts.res), dataset = opts.dataset, seq=i})
   else
     predictions[{{i},{},{}}] = preds_img
   end
